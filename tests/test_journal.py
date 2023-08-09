@@ -3,11 +3,11 @@ import syslog
 
 import pytest
 
-from trick17.journal import JournalHandler
+from trick17 import journal
 
 
-def test_basic():
-    handler = JournalHandler()
+def test_handler():
+    handler = journal.JournalHandler()
 
     root = logging.getLogger()
     root.addHandler(handler)
@@ -31,7 +31,7 @@ def test_basic():
 
 
 def test_level():
-    mapper = JournalHandler._log_level
+    mapper = journal.JournalHandler._log_level
 
     assert mapper(logging.CRITICAL) == syslog.LOG_CRIT
     assert mapper(logging.ERROR) == syslog.LOG_ERR
@@ -40,3 +40,7 @@ def test_level():
     assert mapper(logging.DEBUG) == syslog.LOG_DEBUG
     with pytest.raises(ValueError):
         mapper(logging.NOTSET)
+
+
+def test_stderr():
+    journal.stderr_is_journal()

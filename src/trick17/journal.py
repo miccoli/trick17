@@ -4,9 +4,16 @@
 
 import errno
 import logging
+import os
 import socket
 import struct
+import sys
 import syslog
+
+
+def stderr_is_journal() -> bool:
+    stat = os.fstat(sys.stderr.fileno())
+    return os.environ.get("JOURNAL_STREAM", "") == f"{stat.st_dev}:{stat.st_ino}"
 
 
 class JournalHandler(logging.Handler):

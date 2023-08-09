@@ -22,11 +22,16 @@ pip install trick17
 ## Modules
 
 - `trick17.journal` implements `JournalHandler`, a [`logging.Handler`](https://docs.python.org/3/library/logging.html#logging.Handler) subclass that speaks the systemd [Native Journal Protocol](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/).
+  Function `stderr_is_journal()` can be used to check if logging via `sys.stderr` should be upgraded to native logging, see [Automatic Protocol Upgrading](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/#automatic-protocol-upgrading)
   ```python
   import logging
-  from trick17.journal import JournalHandler
 
-  handler = JournalHandler()
+  from trick17 import journal
+
+  if journal.stderr_is_journal():
+      handler = journal.JournalHandler()
+  else:
+      handler = logging.StreamHandler()
   root = logging.getLogger()
   root.addHandler(handler)
 
