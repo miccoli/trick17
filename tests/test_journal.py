@@ -1,5 +1,6 @@
 import logging
 import syslog
+from pathlib import Path
 
 import pytest
 
@@ -29,6 +30,10 @@ def test_broken_handler(tmp_path):
         BrokenHandler()
 
 
+@pytest.mark.skipif(
+    not Path("/run/systemd/system").is_dir(),
+    reason="system not booted under systemd",
+)
 def test_handler():
     handler = journal.JournalHandler()
 
