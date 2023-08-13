@@ -80,12 +80,11 @@ all = [
 
 [tool.black]
 target-version = ["py37"]
-line-length = 120
-skip-string-normalization = true
+line-length = 84
 
 [tool.ruff]
 target-version = "py37"
-line-length = 120
+line-length = 84
 select = [
   "A",
   "ARG",
@@ -117,10 +116,6 @@ ignore = [
   # Hey, I KNOW how asserts should be used!
   "S101", "B011",
 
-  # Allow non-abstract empty methods in abstract base classes
-  "B027",
-  # Allow boolean positional values in function calls, like `dict.get(... True)`
-  "FBT003",
   # Ignore checks for possible passwords
   "S105", "S106", "S107",
   # Ignore complexity

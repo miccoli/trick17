@@ -82,7 +82,9 @@ class JournalHandler(logging.Handler):
             # try sending j_entry as a datagram payload
             try:
                 nsent = self.soxx.sendto(j_entry, self.SADDR)
-                assert nsent == len(j_entry), f"Boundary broken? {nsent} != {len(j_entry)}"
+                assert nsent == len(
+                    j_entry
+                ), f"Boundary broken? {nsent} != {len(j_entry)}"
                 retry_fd = False
             except OSError as err:
                 if err.errno == errno.EMSGSIZE:
@@ -91,14 +93,21 @@ class JournalHandler(logging.Handler):
                     raise
             if retry_fd:
                 # send big message as a memfd
-                fd = os.memfd_create("journal_entry", flags=os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+                fd = os.memfd_create(
+                    "journal_entry", flags=os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING
+                )
                 nwr = os.write(fd, j_entry)
-                assert nwr == len(j_entry), f"Unable to write to memfd: {nwr} != {len(j_entry)}"
+                assert nwr == len(
+                    j_entry
+                ), f"Unable to write to memfd: {nwr} != {len(j_entry)}"
                 # see https://github.com/systemd/systemd/issues/27608
                 fcntl.fcntl(
                     fd,
                     fcntl.F_ADD_SEALS,
-                    fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE | fcntl.F_SEAL_SEAL,
+                    fcntl.F_SEAL_SHRINK
+                    | fcntl.F_SEAL_GROW
+                    | fcntl.F_SEAL_WRITE
+                    | fcntl.F_SEAL_SEAL,
                 )
                 _send_fds(sock=self.soxx, buffers=[], fds=[fd], address=self.SADDR)
         except Exception:
@@ -112,4 +121,9 @@ def _send_fds(sock, buffers, fds, flags=0, address=None):
 
     *** Patch to fix cpython bug GH-107898 ***
     """
-    return sock.sendmsg(buffers, [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", fds))], flags, address)
+    return sock.sendmsg(
+        buffers,
+        [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", fds))],
+        flags,
+        address,
+    )
