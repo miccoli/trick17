@@ -45,8 +45,7 @@ def test_handler():
 
     root.info("Multiline\nmessage")
 
-    # FIXME: check big message
-    # root.info("A" * 2**18)
+    root.info("Very long message:\n" + "A" * 2**18)
 
 
 def test_level():

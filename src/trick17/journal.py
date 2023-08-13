@@ -2,7 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+import array
 import errno
+import fcntl
 import logging
 import os
 import socket
@@ -65,9 +67,10 @@ class JournalHandler(logging.Handler):
         """emit record on journald socket"""
 
         try:
-            lev = self._log_level(record.levelno)
-            msg = self.format(record)
-            dg: bytes = (
+            # build journal entry
+            lev: int = self._log_level(record.levelno)
+            msg: str = self.format(record)
+            j_entry: bytes = (
                 self._serialize(b"MESSAGE", msg.encode()) + f"PRIORITY={lev:d}\n"
                 f"LOGGER={record.name}\n"
                 f"THREAD_NAME={record.threadName}\n"
@@ -76,15 +79,37 @@ class JournalHandler(logging.Handler):
                 f"CODE_LINE={record.lineno}\n"
                 f"CODE_FUNC={record.funcName}\n".encode()
             )
+            # try sending j_entry as a datagram payload
             try:
-                nsent = self.soxx.sendto(dg, self.SADDR)
+                nsent = self.soxx.sendto(j_entry, self.SADDR)
+                assert nsent == len(j_entry), f"Boundary broken? {nsent} != {len(j_entry)}"
+                retry_fd = False
             except OSError as err:
                 if err.errno == errno.EMSGSIZE:
-                    # FIXME: implement alternative protocol
-                    errmsg = "Log record to long, but fd logging not implemented"
-                    raise NotImplementedError(errmsg) from err
+                    retry_fd = True
                 else:
                     raise
-            assert nsent == len(dg), f"Boundary broken? {nsent} != {len(dg)}"
+            if retry_fd:
+                # send big message as a memfd
+                fd = os.memfd_create("journal_entry", flags=os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+                nwr = os.write(fd, j_entry)
+                assert nwr == len(j_entry), f"Unable to write to memfd: {nwr} != {len(j_entry)}"
+                # see https://github.com/systemd/systemd/issues/27608
+                fcntl.fcntl(
+                    fd,
+                    fcntl.F_ADD_SEALS,
+                    fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE | fcntl.F_SEAL_SEAL,
+                )
+                _send_fds(sock=self.soxx, buffers=[], fds=[fd], address=self.SADDR)
         except Exception:
             self.handleError(record)
+
+
+def _send_fds(sock, buffers, fds, flags=0, address=None):
+    """send_fds(sock, buffers, fds[, flags[, address]]) -> integer
+
+    Send the list of file descriptors fds over an AF_UNIX socket.
+
+    *** Patch to fix cpython bug GH-107898 ***
+    """
+    return sock.sendmsg(buffers, [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", fds))], flags, address)
