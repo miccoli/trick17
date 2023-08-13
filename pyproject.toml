@@ -5,16 +5,20 @@ build-backend = "hatchling.build"
 [project]
 name = "trick17"
 dynamic = ["version"]
-description = 'Systemd utility functions in pure python'
+description = "Systemd utility functions in pure python"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
-keywords = []
+keywords = [
+  "systemd",
+]
 authors = [
   { name = "Stefano Miccoli", email = "stefano.miccoli@polimi.it" },
 ]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: POSIX :: Linux",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
@@ -22,14 +26,13 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/unknown/trick17#readme"
-Issues = "https://github.com/unknown/trick17/issues"
-Source = "https://github.com/unknown/trick17"
+Documentation = "https://github.com/miccoli/trick17#readme"
+Issues = "https://github.com/miccoli/trick17/issues"
+Source = "https://github.com/miccoli/trick17"
 
 [tool.hatch.version]
 path = "src/trick17/__about__.py"

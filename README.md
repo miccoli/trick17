@@ -1,9 +1,11 @@
 # trick17
 
+[![Pre-Alpha warning](https://img.shields.io/badge/warning-Pre--Alpha%20code-red)]()
+
 [![PyPI - Version](https://img.shields.io/pypi/v/trick17.svg)](https://pypi.org/project/trick17)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/trick17.svg)](https://pypi.org/project/trick17)
 
-`trick17` is a pure python lightweight packages that interfaces with various [systemd](https://systemd.io) components.
+`trick17` is a pure python, lightweight package that interfaces with various [systemd](https://systemd.io) components.
 
 -----
 
@@ -21,22 +23,27 @@ pip install trick17
 
 ## Modules
 
-- `trick17.journal` implements `JournalHandler`, a [`logging.Handler`](https://docs.python.org/3/library/logging.html#logging.Handler) subclass that speaks the systemd [Native Journal Protocol](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/).
-  Function `stderr_is_journal()` can be used to check if logging via `sys.stderr` should be upgraded to native logging, see [Automatic Protocol Upgrading](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/#automatic-protocol-upgrading)
-  ```python
-  import logging
+### trick17.journal
 
-  from trick17 import journal
+The `trick17.journal` allows to use the systemd [Native Journal Protocol](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/) via the Python [Logging facility](https://docs.python.org/3/library/logging.html).
 
-  if journal.stderr_is_journal():
-      handler = journal.JournalHandler()
-  else:
-      handler = logging.StreamHandler()
-  root = logging.getLogger()
-  root.addHandler(handler)
+- `JournalHandler` is a [`logging.Handler`](https://docs.python.org/3/library/logging.html#logging.Handler) subclass that speaks the systemd Native Journal Protocol
+- Function `stderr_is_journal()` can be used to check if logging via `sys.stderr` should be upgraded to native logging, see [Automatic Protocol Upgrading](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/#automatic-protocol-upgrading)
 
-  logging.error('Something happened')
-  ```
+```python
+import logging
+
+from trick17 import journal
+
+if journal.stderr_is_journal():
+    handler = journal.JournalHandler()
+else:
+    handler = logging.StreamHandler()
+root = logging.getLogger()
+root.addHandler(handler)
+
+logging.error('Something happened')
+```
 
 ## License
 
