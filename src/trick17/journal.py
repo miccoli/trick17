@@ -13,16 +13,21 @@ import struct
 import sys
 import syslog
 
+import trick17
+
 
 def stderr_is_journal() -> bool:
     stat = os.fstat(sys.stderr.fileno())
-    return os.environ.get("JOURNAL_STREAM", "") == f"{stat.st_dev}:{stat.st_ino}"
+    return (
+        os.environ.get(trick17.SD_JOURNAL_STREAM_ENV, "")
+        == f"{stat.st_dev}:{stat.st_ino}"
+    )
 
 
 class JournalHandler(logging.Handler):
     """Simple logger for the Systemd Native Journal Protocol"""
 
-    SADDR: str = "/run/systemd/journal/socket"
+    SADDR: str = trick17.SD_JOURNAL_SOCKET_PATH
 
     @staticmethod
     def _serialize(key: bytes, val: bytes) -> bytes:
