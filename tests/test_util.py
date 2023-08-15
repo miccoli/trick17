@@ -1,6 +1,7 @@
 import mmap
 import random
 import socket
+import sys
 
 import pytest
 
@@ -13,8 +14,8 @@ def test_make_socket():
 
 
 @pytest.mark.skipif(
-    not hasattr(socket.socket, "sendmsg"),
-    reason="platform not supporting sendmsg",
+    sys.version_info < (3, 9),
+    reason="'socket.recv_fds' requires python3.9 or higher",
 )
 def test_send(tmp_path):
     sock_path = str(tmp_path / "socket")
