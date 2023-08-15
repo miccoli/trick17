@@ -1,4 +1,4 @@
 # SPDX-FileCopyrightText: 2023-present Stefano Miccoli <stefano.miccoli@polimi.it>
 #
 # SPDX-License-Identifier: MIT
-__version__ = "0.0.2.dev1"
+__version__ = "0.0.2"
