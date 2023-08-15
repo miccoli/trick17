@@ -2,18 +2,19 @@
 #
 # SPDX-License-Identifier: MIT
 
-import array
-import errno
-import fcntl
+"""This module contains classes and functions for logging to the systemd journal,
+using the Native Journal Protocol, see <https://systemd.io/JOURNAL_NATIVE_PROTOCOL/>
+"""
+
 import logging
 import os
-import socket
 import stat
 import struct
 import sys
 import syslog
 
 import trick17
+from trick17 import util
 
 
 def stderr_is_journal() -> bool:
@@ -25,38 +26,21 @@ def stderr_is_journal() -> bool:
 
 
 class JournalHandler(logging.Handler):
-    """Simple logger for the Systemd Native Journal Protocol"""
+    """A handler class which writes structured logging records to the
+    systemd journal using the Systemd Native Journal Protocol"""
 
     SADDR: str = trick17.SD_JOURNAL_SOCKET_PATH
 
-    @staticmethod
-    def _serialize(key: bytes, val: bytes) -> bytes:
-        lkey = len(key)
-        lval = len(val)
-        fmt = f"<{lkey:d}ssQ{lval:d}ss"
-        return struct.pack(fmt, key, b"\n", lval, val, b"\n")
-
-    @staticmethod
-    def _log_level(level: int) -> int:
-        if level >= logging.CRITICAL:
-            return syslog.LOG_CRIT
-        elif level >= logging.ERROR:
-            return syslog.LOG_ERR
-        elif level >= logging.WARNING:
-            return syslog.LOG_WARNING
-        elif level >= logging.INFO:
-            return syslog.LOG_INFO
-        elif level > logging.NOTSET:
-            return syslog.LOG_DEBUG
-
-        msg = f"Invalid log level: {level}"
-        raise ValueError(msg)
-
     def __init__(self) -> None:
+        """Initialize the handler."""
+
         super().__init__()
-        self.soxx = socket.socket(family=socket.AF_UNIX, type=socket.SOCK_DGRAM)
-        self.soxx.settimeout(None)
-        # check if SADDR is accessible and a socket
+
+        # create socket for systemd protocol
+        self.sock = util.make_socket()
+
+        # we leave sock unconnected, but verify that SADDR is an accessible socket
+        # in order to fail at handler instantiation
         if not os.access(self.SADDR, os.F_OK):
             msg = f"Nonexistent journal socket '{self.SADDR}'"
             raise RuntimeError(msg)
@@ -84,51 +68,29 @@ class JournalHandler(logging.Handler):
                 f"CODE_LINE={record.lineno}\n"
                 f"CODE_FUNC={record.funcName}\n".encode()
             )
-            # try sending j_entry as a datagram payload
-            try:
-                nsent = self.soxx.sendto(j_entry, self.SADDR)
-                assert nsent == len(
-                    j_entry
-                ), f"Boundary broken? {nsent} != {len(j_entry)}"
-                retry_fd = False
-            except OSError as err:
-                if err.errno == errno.EMSGSIZE:
-                    retry_fd = True
-                else:
-                    raise
-            if retry_fd:
-                # send big message as a memfd
-                fd = os.memfd_create(
-                    "journal_entry", flags=os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING
-                )
-                nwr = os.write(fd, j_entry)
-                assert nwr == len(
-                    j_entry
-                ), f"Unable to write to memfd: {nwr} != {len(j_entry)}"
-                # see https://github.com/systemd/systemd/issues/27608
-                fcntl.fcntl(
-                    fd,
-                    fcntl.F_ADD_SEALS,
-                    fcntl.F_SEAL_SHRINK
-                    | fcntl.F_SEAL_GROW
-                    | fcntl.F_SEAL_WRITE
-                    | fcntl.F_SEAL_SEAL,
-                )
-                _send_fds(sock=self.soxx, buffers=[], fds=[fd], address=self.SADDR)
+            util.send_dgram_or_fd(self.sock, j_entry, self.SADDR)
         except Exception:
             self.handleError(record)
 
+    @staticmethod
+    def _serialize(key: bytes, val: bytes) -> bytes:
+        lkey = len(key)
+        lval = len(val)
+        fmt = f"<{lkey:d}ssQ{lval:d}ss"
+        return struct.pack(fmt, key, b"\n", lval, val, b"\n")
 
-def _send_fds(sock, buffers, fds, flags=0, address=None):
-    """send_fds(sock, buffers, fds[, flags[, address]]) -> integer
+    @staticmethod
+    def _log_level(level: int) -> int:
+        if level >= logging.CRITICAL:
+            return syslog.LOG_CRIT
+        elif level >= logging.ERROR:
+            return syslog.LOG_ERR
+        elif level >= logging.WARNING:
+            return syslog.LOG_WARNING
+        elif level >= logging.INFO:
+            return syslog.LOG_INFO
+        elif level > logging.NOTSET:
+            return syslog.LOG_DEBUG
 
-    Send the list of file descriptors fds over an AF_UNIX socket.
-
-    *** Patch to fix cpython bug GH-107898 ***
-    """
-    return sock.sendmsg(
-        buffers,
-        [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", fds))],
-        flags,
-        address,
-    )
+        msg = f"Invalid log level: {level}"
+        raise ValueError(msg)

@@ -11,6 +11,7 @@ from trick17 import util
 def test_make_socket():
     with util.make_socket() as sock:
         assert sock.fileno() != -1
+        assert sock.gettimeout() is None
 
 
 @pytest.mark.skipif(
