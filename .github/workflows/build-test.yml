@@ -1,4 +1,4 @@
-name: Build package and run test matrix
+name: Build package, run test matrix, and publish on PyPi
 
 env:
   BUILD_PYTHON_VERSION: "3.7"
@@ -60,3 +60,23 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
+
+  pypi-publish:
+    needs: test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/trick17
+    permissions:
+      id-token: write
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
