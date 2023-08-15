@@ -8,3 +8,4 @@ SD_JOURNAL_SOCKET_PATH = "/run/systemd/journal/socket"
 
 # environmet variables possibly set by systemd
 SD_JOURNAL_STREAM_ENV = "JOURNAL_STREAM"
+SD_NOTIFY_SOCKET_ENV = "NOTIFY_SOCKET"

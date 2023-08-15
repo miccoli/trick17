@@ -23,6 +23,11 @@ pip install trick17
 
 ## Modules
 
+### trick17.daemon
+
+- `daemon.booted()` returns `True` if system was booted by systemd.
+- `daemon.notify(state)` sends a notification to systemd.
+
 ### trick17.journal
 
 The `trick17.journal` allows to use the systemd [Native Journal Protocol](https://systemd.io/JOURNAL_NATIVE_PROTOCOL/) via the Python [Logging facility](https://docs.python.org/3/library/logging.html).
