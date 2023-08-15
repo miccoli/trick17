@@ -59,4 +59,4 @@ jobs:
           pip install -U dist/*.whl
       - name: Test with pytest
         run: |
-          pytest --verbose
+          pytest
