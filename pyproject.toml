@@ -40,6 +40,7 @@ path = "src/trick17/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
+  "mypy>=1.0.0",
   "pytest",
 ]
 [tool.hatch.envs.default.scripts]
@@ -53,6 +54,7 @@ cov = [
   "test-cov",
   "cov-report",
 ]
+typing = "mypy --install-types --non-interactive {args:src/trick17 tests}"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
@@ -61,12 +63,9 @@ python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
 detached = true
 dependencies = [
   "black>=23.1.0",
-  "mypy>=1.0.0",
   "ruff>=0.0.243",
-  "pytest",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/trick17 tests}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -75,10 +74,6 @@ fmt = [
   "black {args:.}",
   "ruff --fix {args:.}",
   "style",
-]
-all = [
-  "style",
-  "typing",
 ]
 
 [tool.black]
