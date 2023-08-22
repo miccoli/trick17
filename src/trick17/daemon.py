@@ -42,23 +42,25 @@ def listen_fds() -> Iterator[Tuple[int, str]]:
         msg = f"Unable to get number of fd's from environment: {err}"
         raise RuntimeError(msg) from err
     except ValueError as err:
-        msg = f"Nvalid number of fd's in environment: {err}"
+        msg = f"Parsing of fd's from environment failed: {err}"
         raise RuntimeError(msg) from err
+    if nfds < 1:
+        msg = f"Invalid number of fd's in environment: {nfds:d}"
+        raise RuntimeError(msg)
     fds = range(trick17.SD_LISTEN_FDS_START, trick17.SD_LISTEN_FDS_START + nfds)
     assert len(fds) == nfds
 
     # check names
     names: List[str]
     if trick17.SD_LISTEN_FDS_NAMES_ENV not in os.environ:
-        names = [
-            "",
-        ] * nfds
+        names = [""] * nfds
     else:
         names = os.environ[trick17.SD_LISTEN_FDS_NAMES_ENV].split(os.pathsep)
         if len(names) > nfds:
             names = names[:nfds]
         elif len(names) < nfds:
             names.extend("" for _ in range(nfds - len(names)))
+    assert len(names) == len(fds)
 
     return zip(fds, names)
 
