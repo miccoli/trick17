@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 import os
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, List, Tuple
 
 import trick17
 from trick17 import util
@@ -17,7 +17,7 @@ def booted() -> bool:
     return Path(trick17.SD_BOOTED_PATH).is_dir()
 
 
-def listen_fds() -> Iterator[Tuple[int, str]]:
+def listen_fds() -> Iterator[tuple[int, str]]:
     """listen_fds() returns an iterator over (fd, name) tuples, where
     - fd is an open file descriptor intialized by systemd socket-activation
     - name is an optional name, '' if undefined.
@@ -51,7 +51,7 @@ def listen_fds() -> Iterator[Tuple[int, str]]:
     assert len(fds) == nfds
 
     # check names
-    names: List[str]
+    names: list[str]
     if trick17.SD_LISTEN_FDS_NAMES_ENV not in os.environ:
         names = [""] * nfds
     else:
@@ -62,7 +62,7 @@ def listen_fds() -> Iterator[Tuple[int, str]]:
             names.extend("" for _ in range(nfds - len(names)))
     assert len(names) == len(fds)
 
-    return zip(fds, names)
+    return zip(fds, names, strict=True)
 
 
 def notify(state: str) -> bool:
