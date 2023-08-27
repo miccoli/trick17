@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""functions for interacting with systemd"""
+
 import os
 from pathlib import Path
 
