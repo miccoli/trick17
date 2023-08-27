@@ -8,7 +8,7 @@ def test_booted():
 
 
 def test_notify():
-    ret = daemon.notify("READY=1")
+    ret = daemon.notify("READY=1", "STATUS=running")
     assert ret is False
 
 

@@ -65,8 +65,9 @@ def listen_fds() -> Iterator[tuple[int, str]]:
     return zip(fds, names, strict=True)
 
 
-def notify(state: str) -> bool:
-    """notify 'state' to systemd; returns
+def notify(*msg: str) -> bool:
+    """notify '*msg' messages to systemd;
+    returns
     - True if notification sent to socket,
     - False if environment variable with notification socket is not set."""
 
@@ -74,9 +75,23 @@ def notify(state: str) -> bool:
     if not sock_path:
         return False
 
-    if not sock_path.startswith("/"):
-        msg = f"notify to socket type '{sock_path}' not supported"
-        raise NotImplementedError(msg)
-    with util.make_socket() as sock:
-        util.send_dgram_or_fd(sock, state.encode(), sock_path)
+    state = "\n".join(m.strip() for m in msg)
+
+    match sock_path.split(":"):
+        case [dest] if dest.startswith("/"):
+            # AF_UNIX
+            with util.make_socket() as sock:
+                util.send_dgram_or_fd(sock, state.encode(), sock_path)
+        case [dest] if dest.startswith("@"):
+            # Linux abstract namespace socket
+            errmsg = f"Abstract namespace sockets not implemented ('{sock_path}')"
+            raise NotImplementedError(errmsg)
+        case ["vsock", cid, port]:  # noqa: F841
+            # AF_VSOCK
+            errmsg = f"AF_VSOCK sockets not implemented ('{sock_path}')"
+            raise NotImplementedError(errmsg)
+        case _:
+            errmsg = f"Unrecognized type of socket: {sock_path}"
+            raise ValueError(errmsg)
+
     return True
