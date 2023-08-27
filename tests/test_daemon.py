@@ -1,5 +1,3 @@
-import pytest
-
 from trick17 import daemon
 
 
@@ -13,5 +11,4 @@ def test_notify():
 
 
 def test_listen_fds():
-    with pytest.raises(StopIteration):
-        next(daemon.listen_fds())
+    assert len(daemon.listen_fds()) == 0

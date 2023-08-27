@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: MIT
 
 import os
-from collections.abc import Iterator
 from pathlib import Path
 
 import trick17
 from trick17 import util
 
-__all__ = ["booted", "notify"]
+__all__ = ["booted", "listen_fds", "notify"]
 
 
 def booted() -> bool:
@@ -17,22 +16,24 @@ def booted() -> bool:
     return Path(trick17.SD_BOOTED_PATH).is_dir()
 
 
-def listen_fds() -> Iterator[tuple[int, str]]:
-    """listen_fds() returns an iterator over (fd, name) tuples, where
+def listen_fds() -> list[tuple[int, str]]:
+    """listen_fds() returns a list of (fd, name) tuples, where
     - fd is an open file descriptor intialized by systemd socket-activation
     - name is an optional name, '' if undefined.
+
+    If the unit was not socket-activated the list is empty.
     """
 
     # check pid
     if trick17.SD_LISTEN_FDS_PID_ENV not in os.environ:
-        return iter(())
+        return []
     try:
         pid = int(os.environ[trick17.SD_LISTEN_FDS_PID_ENV])
     except ValueError as err:
         msg = f"Unable to get pid from environment: {err}"
         raise RuntimeError(msg) from err
     if os.getpid() != pid:
-        return iter(())
+        return []
 
     # check FDS
     nfds: int
@@ -62,7 +63,7 @@ def listen_fds() -> Iterator[tuple[int, str]]:
             names.extend("" for _ in range(nfds - len(names)))
     assert len(names) == len(fds)
 
-    return zip(fds, names, strict=True)
+    return list(zip(fds, names, strict=True))
 
 
 def notify(*msg: str) -> bool:

@@ -27,7 +27,7 @@ pip install trick17
 
 - `daemon.booted()` returns `True` if system was booted by systemd.
 - `daemon.notify(state)` sends a notification to systemd.
-- `listen_fds()` returns an iterator over (fd, name) tuples in case of socket activation,
+- `listen_fds()` returns an list of (fd, name) tuples in case of socket activation,
   see [systemd.socket](https://www.freedesktop.org/software/systemd/man/systemd.socket.html)
 
 ### trick17.journal
