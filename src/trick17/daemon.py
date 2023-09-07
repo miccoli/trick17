@@ -74,27 +74,27 @@ def notify(*msg: str) -> bool:
     - True if notification sent to socket,
     - False if environment variable with notification socket is not set."""
 
+    state: bytes = ("\n".join(m.strip() for m in msg)).encode()
+
     sock_path: str = os.getenv(trick17.SD_NOTIFY_SOCKET_ENV, "")
     if not sock_path:
         return False
 
-    state = "\n".join(m.strip() for m in msg)
-
-    match sock_path.split(":"):
-        case [dest] if dest.startswith("/"):
-            # AF_UNIX
-            with util.make_socket() as sock:
-                util.send_dgram_or_fd(sock, state.encode(), sock_path)
-        case [dest] if dest.startswith("@"):
-            # Linux abstract namespace socket
-            errmsg = f"Abstract namespace sockets not implemented ('{sock_path}')"
-            raise NotImplementedError(errmsg)
-        case ["vsock", cid, port]:  # noqa: F841
-            # AF_VSOCK
-            errmsg = f"AF_VSOCK sockets not implemented ('{sock_path}')"
-            raise NotImplementedError(errmsg)
-        case _:
-            errmsg = f"Unrecognized type of socket: {sock_path}"
-            raise ValueError(errmsg)
+    if sock_path.startswith(("/", "@")):
+        # AF_UNIX
+        if sock_path.startswith("@"):
+            # Linux abstract namespace socket, @ is a placeholder for null
+            sock_path = "\x00" + sock_path[1:]
+        with util.make_socket() as sock:
+            util.send_dgram_or_fd(sock, state, sock_path)
+    else:
+        match sock_path.split(":"):
+            case ["vsock", cid, port]:  # noqa: F841
+                # AF_VSOCK
+                errmsg = f"AF_VSOCK sockets not implemented ('{sock_path}')"
+                raise NotImplementedError(errmsg)
+            case _:
+                errmsg = f"Unrecognized type of socket: {sock_path}"
+                raise ValueError(errmsg)
 
     return True
