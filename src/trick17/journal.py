@@ -60,7 +60,8 @@ class JournalHandler(logging.Handler):
             lev: int = self._log_level(record.levelno)
             msg: str = self.format(record)
             j_entry: bytes = (
-                self._serialize(b"MESSAGE", msg.encode()) + f"PRIORITY={lev:d}\n"
+                self._serialize(b"MESSAGE", msg.encode())
+                + f"PRIORITY={lev:d}\n"
                 f"LOGGER={record.name}\n"
                 f"THREAD_NAME={record.threadName}\n"
                 f"PROCESS_NAME={record.processName}\n"
