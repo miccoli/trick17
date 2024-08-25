@@ -1,0 +1,55 @@
+target-version = "py310"
+line-length = 84
+
+[lint]
+select = [
+  "A",
+  "ARG",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  # Hey, I KNOW how asserts should be used!
+  "S101", "B011",
+  # Ignore checks for possible passwords
+  "S105", "S106", "S107",
+  # Ignore complexity
+  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  # Avoid conflicts with ruff formatter
+  "ISC001",
+]
+unfixable = [
+  # Don't touch unused imports
+  "F401",
+]
+
+[lint.isort]
+known-first-party = ["trick17"]
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
