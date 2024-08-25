@@ -32,46 +32,26 @@ Documentation = "https://github.com/miccoli/trick17#readme"
 Issues = "https://github.com/miccoli/trick17/issues"
 Source = "https://github.com/miccoli/trick17"
 
+#
+# hatch
+#
 [tool.hatch.version]
 path = "src/trick17/__about__.py"
 
 [tool.hatch.envs.default]
-dependencies = [
-  "coverage[toml]>=6.5",
+installer = "uv"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
   "mypy>=1.0.0",
   "pytest",
 ]
-[tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov = [
-  "test-cov",
-  "cov-report",
-]
-typing = "mypy --install-types --non-interactive {args:src/trick17 tests}"
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/trick17 tests}"
 
-[[tool.hatch.envs.all.matrix]]
-python = ["3.10", "3.11", "3.12"]
-
-[tool.hatch.envs.lint]
-detached = true
-dependencies = [
-  "ruff>=0.1.7",
-]
-[tool.hatch.envs.lint.scripts]
-style = [
-  "ruff {args:.}",
-]
-fmt = [
-  "ruff format {args:.}",
-  "ruff --fix {args:.}",
-  "style",
-]
-
+#
+# coverage
+#
 [tool.coverage.run]
 source_pkgs = ["trick17", "tests"]
 branch = true
@@ -91,6 +71,9 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
+#
+# pytest
+#
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
