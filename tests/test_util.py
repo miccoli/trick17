@@ -7,6 +7,10 @@ import pytest
 
 from trick17 import util
 
+pytestmark = pytest.mark.skipif(
+    sys.platform != "linux", reason="tests for linux only"
+)
+
 
 def test_make_socket():
     with util.make_socket() as sock:
