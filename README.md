@@ -14,6 +14,7 @@
 - [Installation](#installation)
 - [Modules](#modules)
 - [License](#license)
+- [Motivation](#motivation-and-alternatives)
 
 ## Installation
 
@@ -55,3 +56,14 @@ logging.error('Something happened')
 ## License
 
 `trick17` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+
+## Motivation and alternatives
+
+Many existing interfaces to systemd are python bindings to [libsystemd]
+(https://www.freedesktop.org/software/systemd/man/latest/libsystemd.html), see e.g. [python-systemd](https://github.com/systemd/python-systemd) or [cysystemd](https://github.com/systemd/python-systemd).
+Even if most systems running under systemd will have libsystemd already installed, a native python implementation has many advantages:
+- easy vendoring,
+- pypi availability of no-ABI, platform independent wheels, with no transitive dependencies.
+
+This package is a partial implementation of the most used (at least by me) functions of libsystemd.
+Please feel free open a issue if this package is useful to you and misses a feature.
