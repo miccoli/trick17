@@ -59,8 +59,7 @@ logging.error('Something happened')
 
 ## Motivation and alternatives
 
-Many existing interfaces to systemd are python bindings to [libsystemd]
-(https://www.freedesktop.org/software/systemd/man/latest/libsystemd.html), see e.g. [python-systemd](https://github.com/systemd/python-systemd) or [cysystemd](https://github.com/systemd/python-systemd).
+Many existing interfaces to systemd are python bindings to [libsystemd](https://www.freedesktop.org/software/systemd/man/latest/libsystemd.html), see e.g. [python-systemd](https://github.com/systemd/python-systemd) or [cysystemd](https://github.com/systemd/python-systemd).
 Even if most systems running under systemd will have libsystemd already installed, a native python implementation has many advantages:
 - easy vendoring,
 - pypi availability of no-ABI, platform independent wheels, with no transitive dependencies.
